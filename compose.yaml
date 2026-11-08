@@ -1,0 +1,14 @@
+services:
+  webcam-capture:
+    build: .
+    image: webcam-capture:latest
+    container_name: webcam-capture
+    restart: unless-stopped
+    devices:
+      - /dev/video0:/dev/video0
+    group_add:
+      - "44" # host video group
+    environment:
+      TZ: ${WEBCAM_TZ:-UTC}
+    volumes:
+      - ./data:/data
