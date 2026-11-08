@@ -16,7 +16,7 @@ set -euo pipefail
 HOST="${1:-pandoria}"
 WEBCAM_TZ="${WEBCAM_TZ:-America/Toronto}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-APP_DIR="${APP_DIR:-$SCRIPT_DIR/../webcam-capture}"
+APP_DIR="${APP_DIR:-$(git -C "$SCRIPT_DIR" rev-parse --show-toplevel 2>/dev/null || echo "$SCRIPT_DIR/..")}"
 REMOTE_DIR="${REMOTE_DIR:-webcam-capture}"       # worktree dir on the box (~/)
 REMOTE_REPO="${REMOTE_REPO:-webcam-capture.git}" # bare repo on the box (~/)
 
