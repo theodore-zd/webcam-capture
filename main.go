@@ -48,7 +48,7 @@ func main() {
 }
 
 func dayDir(t time.Time) string {
-	return filepath.Join(dataDir, t.Format("2006"), t.Format("01"), t.Format("02"))
+	return filepath.Join(dataDir, t.Format("2006"), t.Format("January"), t.Format("02"))
 }
 
 func capture(now time.Time) error {
@@ -117,9 +117,19 @@ func sweep() {
 			continue
 		}
 		for _, m := range months {
-			if !m.IsDir() || !isNum(m.Name(), 2) {
+			if !m.IsDir() {
 				continue
 			}
+			// Month dirs are full names (e.g. "November"); tolerate the old
+			// zero-padded numeric layout ("11") so legacy data still zips.
+			mt, err := time.Parse("January", m.Name())
+			if err != nil {
+				mt, err = time.Parse("01", m.Name())
+			}
+			if err != nil {
+				continue
+			}
+			mName := fmt.Sprintf("%02d", int(mt.Month()))
 			days, err := os.ReadDir(filepath.Join(dataDir, y.Name(), m.Name()))
 			if err != nil {
 				continue
@@ -128,7 +138,7 @@ func sweep() {
 				if !d.IsDir() || !isNum(d.Name(), 2) {
 					continue
 				}
-				date := y.Name() + "-" + m.Name() + "-" + d.Name()
+				date := y.Name() + "-" + mName + "-" + d.Name()
 				if date >= today {
 					continue
 				}

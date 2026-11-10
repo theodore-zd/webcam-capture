@@ -4,8 +4,8 @@ Periodic webcam capture service. Runs in Docker on a Linux box with a V4L2
 camera (e.g. `/dev/video0`).
 
 - Takes a photo every 20 seconds
-- Stores it as `data/<year>/<month>/<day>/<yyyy>-<mm>-<dd>-<hh>-<mm>-<ss>.jpeg`
-  (timestamps in the container's TZ — set `WEBCAM_TZ`, e.g. `America/New_York`)
+- Stores it as `data/<year>/<Month-name>/<day>/<yyyy>-<mm>-<dd>-<hh>-<mm>-<ss>.jpeg`
+  e.g. `data/2026/November/08/...` (timestamps in the container's TZ — set `WEBCAM_TZ`, e.g. `America/New_York`)
 - On date rollover, zips the finished day's folder into the month folder and
   deletes the originals; also sweeps missed days at startup
 
