@@ -59,7 +59,7 @@ func buildSummary() (*pageData, error) {
 	var latest time.Time
 
 	err := filepath.WalkDir(dataDir, func(path string, d os.DirEntry, err error) error {
-		if err != nil || d.IsDir() {
+		if err != nil || d == nil || d.IsDir() {
 			return nil // skip unreadable entries silently
 		}
 		info, err := d.Info()
@@ -77,6 +77,8 @@ func buildSummary() (*pageData, error) {
 		dayKey := parts[0] + "|" + parts[1] + "|" + parts[2]
 		ag := aggs[dayKey]
 		if ag == nil {
+			ag = &dayAgg{day: dayStat{Date: parts[0] + " " + parts[1] + " " + parts[2]}, hours: map[string]*hourStat{}}
+			aggs[dayKey] = ag
 			mt, err := time.Parse("January", parts[1])
 			if err != nil {
 				mt, err = time.Parse("01", parts[1])
@@ -84,8 +86,6 @@ func buildSummary() (*pageData, error) {
 			if err == nil {
 				ag.day.Link = fmt.Sprintf("date=%s-%02d-%s", parts[0], int(mt.Month()), parts[2])
 			}
-			ag = &dayAgg{day: dayStat{Date: parts[0] + " " + parts[1] + " " + parts[2]}, hours: map[string]*hourStat{}}
-			aggs[dayKey] = ag
 		}
 		ag.day.Count++
 		ag.day.Bytes += info.Size()
