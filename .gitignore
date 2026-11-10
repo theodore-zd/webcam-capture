@@ -2,3 +2,4 @@ data/
 *.jpeg
 *.zip
 .env
+webcam-capture
