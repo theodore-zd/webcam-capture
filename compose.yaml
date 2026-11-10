@@ -10,5 +10,8 @@ services:
       - "44" # host video group
     environment:
       TZ: ${WEBCAM_TZ:-UTC}
+      WEBCAM_HTTP_ADDR: ":8080"
+    ports:
+      - "8080:8080" # web UI: latest photo + capture summary
     volumes:
       - ./data:/data

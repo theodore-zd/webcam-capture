@@ -27,6 +27,8 @@ func main() {
 	log.SetFlags(log.LstdFlags)
 	log.Printf("webcam-capture started: interval=%s tz=%s data=%s", interval, time.Local, dataDir)
 
+	go startWeb(webAddr())
+
 	sweep()
 
 	current := ""
@@ -48,7 +50,15 @@ func main() {
 }
 
 func dayDir(t time.Time) string {
-	return filepath.Join(dataDir, t.Format("2006"), t.Format("January"), t.Format("02"))
+	return filepath.Join(dataDir, t.Format("2006"), t.Format("January"), t.Format("02"), t.Format("3pm"))
+}
+
+// webAddr returns the listen address for the web UI (WEBCAM_HTTP_ADDR, ":8080").
+func webAddr() string {
+	if a := os.Getenv("WEBCAM_HTTP_ADDR"); a != "" {
+		return a
+	}
+	return ":8080"
 }
 
 func capture(now time.Time) error {
