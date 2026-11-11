@@ -20,14 +20,14 @@ import (
 
 type hourStat struct {
 	Name  string
-	Link  string // query string to open this hour in the viewer
+	Link  string // hour value for the viewer URL, e.g. "1pm" (empty = not browsable)
 	Count int
 	Bytes int64
 }
 
 type dayStat struct {
 	Date  string // display date, e.g. "2026 November 10"
-	Link  string // date query param for the viewer
+	Link  string // yyyy-mm-dd date value for viewer URLs
 	Count int
 	Bytes int64
 	Hours []hourStat
@@ -84,7 +84,7 @@ func buildSummary() (*pageData, error) {
 				mt, err = time.Parse("01", parts[1])
 			}
 			if err == nil {
-				ag.day.Link = fmt.Sprintf("date=%s-%02d-%s", parts[0], int(mt.Month()), parts[2])
+				ag.day.Link = fmt.Sprintf("%s-%02d-%s", parts[0], int(mt.Month()), parts[2])
 			}
 		}
 		ag.day.Count++
@@ -97,7 +97,7 @@ func buildSummary() (*pageData, error) {
 		if hs == nil {
 			hs = &hourStat{Name: hour}
 			if hour != "(root)" && ag.day.Link != "" {
-				hs.Link = ag.day.Link + "&hour=" + hour
+				hs.Link = hour
 			}
 			ag.hours[hour] = hs
 		}
@@ -424,9 +424,9 @@ const indexHTML = `<!doctype html>
   <div class="card">Disk free: <b>{{.FreeBytes | human}}</b> of {{.TotalDiskBytes | human}}</div>
 </div>
 <h2>Captured</h2>
-{{if .Days}}{{range .Days}}<details{{if .Open}} open{{end}}>
-  <summary>{{.Date}} — {{.Count}} photos ({{.Bytes | human}})</summary>
-  <ul class="hours">{{range .Hours}}{{if .Link}}<li><a href="/view?{{.Link}}">{{.Name}}</a> — {{.Count}} photos ({{.Bytes | human}})</li>{{else}}<li>{{.Name}} — {{.Count}} photos ({{.Bytes | human}})</li>{{end}}{{end}}</ul>
+{{if .Days}}{{range .Days}}{{$dl := .Link}}<details{{if .Open}} open{{end}}>
+  <summary><a href="/view?date={{$dl}}&n=0">{{.Date}}</a> — {{.Count}} photos ({{.Bytes | human}})</summary>
+  <ul class="hours">{{range .Hours}}{{if .Link}}<li><a href="/view?date={{$dl}}&hour={{.Link}}">{{.Name}}</a> — {{.Count}} photos ({{.Bytes | human}})</li>{{else}}<li>{{.Name}} — {{.Count}} photos ({{.Bytes | human}})</li>{{end}}{{end}}</ul>
 </details>{{end}}{{else}}<p>No photos yet.</p>{{end}}
 <footer>refreshes every 30s · webcam-capture web UI</footer>
 </body>
@@ -442,6 +442,7 @@ func handleIndex(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
+	w.Header().Set("Cache-Control", "no-cache")
 	pd, err := buildSummary()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
