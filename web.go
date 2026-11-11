@@ -124,10 +124,14 @@ func listDays() []string {
 				if !d.IsDir() {
 					continue
 				}
-				if _, err := time.Parse("2006-January-02", y.Name()+"-"+m.Name()+"-"+d.Name()); err != nil {
+				mt, err := time.Parse("January", m.Name())
+				if err != nil {
+					mt, err = time.Parse("01", m.Name())
+				}
+				if err != nil {
 					continue
 				}
-				days = append(days, y.Name()+"-"+m.Name()+"-"+d.Name())
+				days = append(days, fmt.Sprintf("%s-%02d-%s", y.Name(), int(mt.Month()), d.Name()))
 			}
 		}
 	}
